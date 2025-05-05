@@ -1,5 +1,5 @@
 open HolKernel boolLib bossLib Parse
-     arithmeticTheory
+     arithmeticTheory intLib;
 val _ = new_theory "fib";
 
 Definition fib_int_def:
@@ -10,23 +10,15 @@ Theorem fib_int_positive:
   ∀n. fib_int (n + 1) > 0
 Proof
   recInduct fib_int_ind>>
-  Cases
-  >- (simp[]>>
-      simp[Once fib_int_def]
-     )
-  >- (simp[ADD1]>>
-      rw[]>>
-      Cases_on ‘n'’
-      >- (simp[Once fib_int_def]>>
-          simp[Once fib_int_def]>>
-          simp[Once fib_int_def]
-         )
-      >- (‘SUC n ≠ 0’ by simp[]>>
-          gs[]>>
-          simp[Once fib_int_def]>>
-          intLib.ARITH_TAC
-         )
-     )
+  rw[]>>
+  rw[Once fib_int_def]>> (*‘n ≠ 0’ introduced as assm*)
+  Cases_on ‘n = 1’ (*split into two subgoals ‘n = 1’ and ‘n ≠ 1’*)
+  >-(rw[]>>
+     EVAL_TAC (*EVAL_TAC is as though telling HOL to EVAL the term*)
+    )
+  >-(fs[]>>
+     ARITH_TAC (*I found no reference for this*)
+    )
 QED
 
 Definition fib_def:
