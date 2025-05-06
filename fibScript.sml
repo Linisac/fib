@@ -1,24 +1,29 @@
 open HolKernel boolLib bossLib Parse
-     arithmeticTheory intLib;
+     arithmeticTheory intLib gcdTheory;
+
 val _ = new_theory "fib";
 
 Definition fib_int_def:
   fib_int (n: num): int = if n = 0 then 0 else if n = 1 then 1 else fib_int (n - 1) + fib_int (n - 2)
 End
 
-Theorem fib_int_positive:
-  ∀n. fib_int (n + 1) > 0
+Theorem fib_int_nonnegative:
+  ∀n. fib_int n ≥ 0
 Proof
   recInduct fib_int_ind>>
   rw[]>>
-  rw[Once fib_int_def]>> (*‘n ≠ 0’ introduced as assm*)
-  Cases_on ‘n = 1’ (*split into two subgoals ‘n = 1’ and ‘n ≠ 1’*)
-  >-(rw[]>>
-     EVAL_TAC (*EVAL_TAC is as though telling HOL to EVAL the term*)
-    )
-  >-(fs[]>>
-     ARITH_TAC (*I found no reference for this*)
-    )
+  rw[Once fib_int_def]>>
+  fs[]>>
+  ARITH_TAC
+QED
+
+Theorem fib_int_positive:
+  ∀n. fib_int (n + 1) > 0
+Proof
+  Induct>>
+  simp[Once fib_int_def, ADD1]>>
+  qspec_then ‘n’ assume_tac fib_int_nonnegative>>
+  ARITH_TAC
 QED
 
 Definition fib_def:
@@ -34,52 +39,60 @@ QED
 Theorem fib_add:
   ∀n k. fib (n + k + 1) = fib (k + 1) * fib (n + 1) + fib k * fib n
 Proof
-  ho_match_mp_tac fib_ind >> (*simp[arithmeticTheory.SUC_ONE_ADD]*)
-  conj_tac >- (
-   simp[fib_def]) >>
-  conj_tac >-
-   gs[fib_def]
-
-  rw[fib_def] >-
-   (‘fib (SUC (SUC k)) = fib k + fib (SUC k)’ suffices_by rw[arithmeticTheory.SUC_ONE_ADD] >>
-    simp[fib_def]
-   ) >>
-  a
-QED
-
-Definition coprime_def:
-  coprime m n ⇔ ∀d. (d > 0 ∧ m MOD d = 0 ∧ n MOD d = 0) ⇒ d = 1
-End
-
-Theorem lem_1:
-  coprime (fib 0) (fib (SUC 0))
-Proof
-  simp[Once fib_def]>>
-  simp[Once fib_def]
+  Induct_on ‘k’ using fib_ind>>
+  Cases_on ‘k ≤ 1’
+  >-(rw[]>>
+     Cases_on ‘k = 0’
+     >-(rw[]>>
+        qabbrev_tac ‘a = fib (n + 1)’>>
+        qabbrev_tac ‘b = fib n’>>
+        EVAL_TAC>>
+        decide_tac
+       )
+     >-(‘k = 1’ by simp[]>>
+        simp[]>>
+        rw[Once fib_def]>>
+        qabbrev_tac ‘a = fib (n + 1)’>>
+        qabbrev_tac ‘b = fib n’>>
+        EVAL_TAC>>
+        decide_tac
+       )
+    )
+  >-(cheat
+     (*rw[]>>
+     rw[Once fib_def]>>
+     last_x_assum $ drule_then assume_tac>>
+     last_x_assum $ drule_then assume_tac>>
+     last_x_assum $ qspec_then ‘n’ assume_tac>>
+     last_x_assum $ qspec_then ‘n’ assume_tac>>
+     pop_assum mp_tac>>
+     pop_assum mp_tac>>
+     qabbrev_tac ‘a = fib (n + 1)’>>
+     qabbrev_tac ‘b = fib n’*)
+    )
 QED
 
 Theorem coprime_fib_suc:
-  ∀n. coprime (fib n) (fib (SUC n))
+  ∀n. coprime (fib n) (fib (n + 1))
 Proof
-  ho_match_mp_tac fib_ind>>
-  Cases
-  >- (
-   strip_tac>>
-   simp[]>>
-   simp[Once fib_def]>>
-   simp[Once fib_def]>>
-   simp[coprime_def]>>
-   rw[]>>
-   Cases_on ‘d’
-   >- simp[]
-   >- (Cases_on ‘n’
-       >- simp[]
-       >- (
-        simp[]>>
-        rw[]
-       )
-   )
-  )
+  Induct
+  >-(qspec_then ‘0’
+                (fn thm => (simp[Once fib_def, thm]>>simp[Once fib_def]))
+                gcdTheory.coprime_SUC
+    )
+  >-(simp[ADD1]>>
+     qspecl_then [‘fib (n + 1)’, ‘fib (n + 2)’] (fn thm => simp[thm]) gcdTheory.coprime_sym>>
+     rw[Once fib_def]>>
+     qspecl_then [‘fib (n + 1)’, ‘fib n’] (fn thm => simp[thm]) gcdTheory.coprime_sym
+    )
 QED
-     
+print_find "gcd_def"
+Theorem gcd_fib_add:
+  ∀m n. gcd (fib m) (fib (n + m)) = gcd (fib m) (fib n)
+Proof
+  Cases
+  >-(simp[gcd_def])
+  >-()
+QED
+
 val _ = export_theory();
