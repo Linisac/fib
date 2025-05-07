@@ -1,5 +1,5 @@
 open HolKernel boolLib bossLib Parse
-     arithmeticTheory intLib gcdTheory;
+     arithmeticTheory intLib gcdTheory
 
 val _ = new_theory "fib";
 
@@ -80,23 +80,24 @@ Proof
   Induct
   >-(EVAL_TAC)
   >-(simp[ADD1, Once fib_def])
-  (*
-  Induct
-  >-(EVAL_TAC)
-  >-(‘fib (n + 2) = fib n + fib (n + 1)’ by simp[Once fib_def]>>
-     simp[ADD1]>>
-     metis_tac[gcdTheory.coprime_sym]
-    )
-  *)
 QED
 
 Theorem gcd_fib_add:
-  ∀m n. gcd (fib m) (fib (n + m)) = gcd (fib m) (fib n)
+  ∀m. gcd (fib m) (fib (n + m)) = gcd (fib m) (fib n)
 Proof
-  cheat
-  (*Cases
-  >-(simp[gcd_def])
-  >-()*)
+  Induct
+  >-(simp[Once arithmeticTheory.ADD_0])
+  >-(simp[ADD1]>>
+     simp[Once gcdTheory.GCD_COMM]>>
+     ‘fib (m + n + 1) = fib (n + 1) * fib (m + 1) + fib n * fib m’ by simp[fib_add]>>
+     ‘m + (n + 1) = m + n + 1’ by decide_tac>>
+     ‘fib (m + (n + 1)) = fib (m + n + 1)’ by (AP_TERM_TAC >> pop_assum (fn thm => ((mp_tac thm)>>decide_tac)))>>
+     ‘fib (m + (n + 1)) = fib (n + 1) * fib (m + 1) + fib n * fib m’ by simp[]>>
+     pop_assum (fn thm => pure_rewrite_tac[thm])>>
+     simp[gcdTheory.GCD_REDUCE]>>
+     ‘coprime (fib (m + 1)) (fib m)’ by simp[coprime_fib_suc, gcdTheory.coprime_sym]>>
+     simp[gcdTheory.GCD_REDUCE_BY_COPRIME]
+    )
 QED
 
 val _ = export_theory();
