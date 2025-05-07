@@ -106,12 +106,25 @@ Proof
   simp[]
 QED
 
-(*
 Theorem gcd_fib_mod:
-  0 < m ⇒ gcd (fib m) (fib (n MOD m)) = gcd (fib m) (fib n)
+  ∀n. 0 < m ⇒ gcd (fib m) (fib (n MOD m)) = gcd (fib m) (fib n)
 Proof
-  
+  completeInduct_on ‘n’>>
+  Cases_on ‘n < m’
+  >-(‘n MOD m = n’ by simp[]>>
+     simp[]
+    )
+  >-(last_x_assum (fn thm => qspec_then ‘n - m’ assume_tac thm)>>
+     strip_tac>>
+     gvs[]>>
+     last_x_assum (fn thm => ‘m ≤ n’ by simp[thm])>>
+     ‘n MOD m = (n - m) MOD m’ by simp[arithmeticTheory.SUB_MOD]>>
+     last_x_assum mp_tac>>
+     pop_assum (fn thm => pure_rewrite_tac[Once $ GSYM thm])>>
+     strip_tac>>
+     pop_assum (fn thm => simp[Once thm])>>
+     simp[gcd_fib_diff]
+    )
 QED
-*)
 
 val _ = export_theory();
