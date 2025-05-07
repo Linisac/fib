@@ -71,8 +71,6 @@ Proof
     )
 QED
 
-(*I found nothing by doing: print_match ["arithmetic"] “p * (m + n) = p * m + p * n”, but found the intended match by doing: print_find "DISTRIB"*)
-
 Theorem coprime_fib_suc:
   ∀n. coprime (fib n) (fib (n + 1))
 Proof
@@ -87,11 +85,10 @@ Theorem gcd_fib_add:
 Proof
   Induct
   >-(simp[Once arithmeticTheory.ADD_0])
-  >-(simp[ADD1]>>
-     simp[Once gcdTheory.GCD_COMM]>>
+  >-(simp[ADD1, Once gcdTheory.GCD_COMM]>>
      ‘fib (m + n + 1) = fib (n + 1) * fib (m + 1) + fib n * fib m’ by simp[fib_add]>>
      ‘m + (n + 1) = m + n + 1’ by decide_tac>>
-     ‘fib (m + (n + 1)) = fib (m + n + 1)’ by (AP_TERM_TAC >> pop_assum (fn thm => ((mp_tac thm)>>decide_tac)))>>
+     ‘fib (m + (n + 1)) = fib (m + n + 1)’ by (AP_TERM_TAC>>decide_tac)>>
      ‘fib (m + (n + 1)) = fib (n + 1) * fib (m + 1) + fib n * fib m’ by simp[]>>
      pop_assum (fn thm => pure_rewrite_tac[thm])>>
      simp[gcdTheory.GCD_REDUCE]>>
