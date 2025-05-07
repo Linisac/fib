@@ -36,43 +36,42 @@ Proof
   Induct >> simp[Once fib_def, ADD1]
 QED
 
+Theorem fib_leq_1:
+  n ≤ 1 ⇒ fib n = n
+Proof
+  strip_tac>>
+  Cases_on ‘n’
+  >-(EVAL_TAC)
+  >-(gvs[ADD1]>>
+     ‘n' + 1 = 1’ by simp[]>>
+     simp[]>>
+     EVAL_TAC
+    )
+QED
+
 Theorem fib_add:
   ∀k. fib (n + k + 1) = fib (k + 1) * fib (n + 1) + fib k * fib n
 Proof
-  Induct_on ‘k’ using fib_ind>>
-  Cases_on ‘k ≤ 1’
-  >-(rw[]>>
-     Cases_on ‘k = 0’
-     >-(rw[]>>
-        qabbrev_tac ‘a = fib (n + 1)’>>
-        qabbrev_tac ‘b = fib n’>>
-        EVAL_TAC>>
-        decide_tac
+  recInduct fib_ind>>
+  rw[]>>
+  Cases_on ‘n' ≤ 1’
+  >-(Cases_on ‘n' = 0’
+     >-(simp[fib_leq_1]
        )
-     >-(‘k = 1’ by simp[]>>
-        simp[]>>
-        rw[Once fib_def]>>
-        qabbrev_tac ‘a = fib (n + 1)’>>
-        qabbrev_tac ‘b = fib n’>>
-        EVAL_TAC>>
-        decide_tac
+     >-(‘n' = 1’ by simp[]>>
+        ‘fib 2 = 1’ by EVAL_TAC>>
+        simp[fib_leq_1, Once fib_def]
        )
     )
-  >-(
-     gvs[]>>
+  >-(gvs[]>>
      simp[Once fib_def]>>
-     qabbrev_tac ‘a = fib (n + 1)’>>
-     qabbrev_tac ‘b = fib n’>>
-     simp[Once $ GSYM fib_def]>>
-     simp[boolTheory.EQ_SYM_EQ]>>
-     simp[Once fib_def]>>
-     ‘b * fib k = b * (fib (k - 1) + fib (k - 2))’ by simp[Once fib_def]>>
-     simp[]
-     (**)
-     (*I found nothing by doing: print_match ["arithmetic"] “p * (m + n) = p * m + p * n”
-       but found the intended match by doing: print_find "DISTRIB"*)
+     ‘fib n' = fib (n' - 1) + fib (n' - 2)’ by simp[Once fib_def]>>
+     ‘fib (n' + 1) = fib n' + fib (n' - 1)’ by simp[Once fib_def]>>
+     simp[Once $ GSYM fib_def, boolTheory.EQ_SYM_EQ, Once fib_def]
     )
 QED
+
+(*I found nothing by doing: print_match ["arithmetic"] “p * (m + n) = p * m + p * n”, but found the intended match by doing: print_find "DISTRIB"*)
 
 Theorem coprime_fib_suc:
   ∀n. coprime (fib n) (fib (n + 1))
