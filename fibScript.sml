@@ -37,7 +37,7 @@ Proof
 QED
 
 Theorem fib_add:
-  ∀n k. fib (n + k + 1) = fib (k + 1) * fib (n + 1) + fib k * fib n
+  ∀k. fib (n + k + 1) = fib (k + 1) * fib (n + 1) + fib k * fib n
 Proof
   Induct_on ‘k’ using fib_ind>>
   Cases_on ‘k ≤ 1’
@@ -58,41 +58,46 @@ Proof
         decide_tac
        )
     )
-  >-(cheat
-     (*rw[]>>
-     rw[Once fib_def]>>
-     last_x_assum $ drule_then assume_tac>>
-     last_x_assum $ drule_then assume_tac>>
-     last_x_assum $ qspec_then ‘n’ assume_tac>>
-     last_x_assum $ qspec_then ‘n’ assume_tac>>
-     pop_assum mp_tac>>
-     pop_assum mp_tac>>
+  >-(
+     gvs[]>>
+     simp[Once fib_def]>>
      qabbrev_tac ‘a = fib (n + 1)’>>
-     qabbrev_tac ‘b = fib n’*)
+     qabbrev_tac ‘b = fib n’>>
+     simp[Once $ GSYM fib_def]>>
+     simp[boolTheory.EQ_SYM_EQ]>>
+     simp[Once fib_def]>>
+     ‘b * fib k = b * (fib (k - 1) + fib (k - 2))’ by simp[Once fib_def]>>
+     simp[]
+     (**)
+     (*I found nothing by doing: print_match ["arithmetic"] “p * (m + n) = p * m + p * n”
+       but found the intended match by doing: print_find "DISTRIB"*)
     )
 QED
 
 Theorem coprime_fib_suc:
   ∀n. coprime (fib n) (fib (n + 1))
 Proof
+  simp[Once gcdTheory.coprime_sym]>>
   Induct
-  >-(qspec_then ‘0’
-                (fn thm => (simp[Once fib_def, thm]>>simp[Once fib_def]))
-                gcdTheory.coprime_SUC
+  >-(EVAL_TAC)
+  >-(simp[ADD1, Once fib_def])
+  (*
+  Induct
+  >-(EVAL_TAC)
+  >-(‘fib (n + 2) = fib n + fib (n + 1)’ by simp[Once fib_def]>>
+     simp[ADD1]>>
+     metis_tac[gcdTheory.coprime_sym]
     )
-  >-(simp[ADD1]>>
-     qspecl_then [‘fib (n + 1)’, ‘fib (n + 2)’] (fn thm => simp[thm]) gcdTheory.coprime_sym>>
-     rw[Once fib_def]>>
-     qspecl_then [‘fib (n + 1)’, ‘fib n’] (fn thm => simp[thm]) gcdTheory.coprime_sym
-    )
+  *)
 QED
-print_find "gcd_def"
+
 Theorem gcd_fib_add:
   ∀m n. gcd (fib m) (fib (n + m)) = gcd (fib m) (fib n)
 Proof
-  Cases
+  cheat
+  (*Cases
   >-(simp[gcd_def])
-  >-()
+  >-()*)
 QED
 
 val _ = export_theory();
