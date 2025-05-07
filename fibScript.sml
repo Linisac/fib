@@ -97,4 +97,21 @@ Proof
     )
 QED
 
+Theorem gcd_fib_diff:
+  m ≤ n ⇒ gcd (fib m) (fib (n - m)) = gcd (fib m) (fib n)
+Proof
+  rw[]>>
+  ‘n - m + m = n’ by decide_tac>>
+  ‘gcd (fib m) (fib (n − m)) = gcd (fib m) (fib (n - m + m))’ by simp[gcd_fib_add]>>
+  simp[]
+QED
+
+(*
+Theorem gcd_fib_mod:
+  0 < m ⇒ gcd (fib m) (fib (n MOD m)) = gcd (fib m) (fib n)
+Proof
+  
+QED
+*)
+
 val _ = export_theory();
