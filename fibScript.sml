@@ -141,18 +141,13 @@ Proof
   ARITH_TAC
 QED
 
-Definition FST3_def:
-  FST3 (x:int, y:int, z:int)  = Num x
-End
-
 Definition itfib_def:
   itfib (n : int) (j : int) (k : int) : int =
   if n ≤ 1 then k
   else itfib (n - 1) k (j + k)
 Termination
-  WF_REL_TAC ‘measure FST3’>>
-  rw[FST3_def]>>
-  ‘n > 1’ by intLib.ARITH_TAC>>
+  WF_REL_TAC ‘measure (\(x, y, z). Num x)’>>
+  rw[]>>
   intLib.ARITH_TAC
 End
 
