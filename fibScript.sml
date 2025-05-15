@@ -1,4 +1,4 @@
-open HolKernel boolLib bossLib Parse
+open HolKernel boolLib bossLib Parse dep_rewrite
      arithmeticTheory intLib gcdTheory
 
 val _ = new_theory "fib";
@@ -103,15 +103,15 @@ Proof
   Cases_on ‘n = 0’
   >-(
     ‘fib 0 = 0’ by EVAL_TAC>>
-    simp[])
+    simp[]
+    )
   >-(
+    fs[PULL_FORALL]>>
     rw[]>>
-    last_x_assum (fn thm => qspec_then ‘m MOD n’ assume_tac thm)>>
-    rfs[]>>
-    pop_assum (qspec_then ‘n’ assume_tac)>>
-    qspecl_then [‘n’, ‘m’] assume_tac gcd_fib_mod_gen>>
-    qspecl_then [‘n’, ‘m’] assume_tac gcdTheory.GCD_MOD>>
-    last_x_assum (fn thm => fs[thm])>>
+    last_x_assum (qspecl_then [‘m MOD n’, ‘n’] mp_tac)>>
+    simp[]>>
+    DEP_REWRITE_TAC[gcd_fib_mod_gen, GSYM gcdTheory.GCD_MOD]>>
+    simp[]>>
     metis_tac[gcdTheory.GCD_SYM])
 QED
 
